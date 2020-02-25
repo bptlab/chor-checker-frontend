@@ -48,14 +48,43 @@ $(function() {
   var downloadLink = $('#js-download-diagram');
   var downloadSvgLink = $('#js-download-svg');
   const validateButton = $('#js-validate');
-  const panelToggle = $('#panel-toggle');
   const propertiesPanel = $('#properties-panel');
 
-  panelToggle.click(e => {
-    propertiesPanel.toggle();
-    $('#open-toggle').toggle();
-    $('#close-toggle').toggle();
+  const modelCheckerPanel = $('#model-checker-panel');
+  const propsToggle = $('#open-props');
+  const modelToggle = $('#open-model-check');
+
+  function indentToggles() {
+    if(propsToggle.hasClass('toggle-active') || modelToggle.hasClass('toggle-active')){
+      propsToggle.addClass('toggle-overlap');
+      modelToggle.addClass('toggle-overlap');
+    } else {
+      propsToggle.removeClass('toggle-overlap');
+      modelToggle.removeClass('toggle-overlap');
+    }
+
+  }
+
+  propsToggle.click(e => {
+    propertiesPanel.toggleClass('hide-panel');
+    modelCheckerPanel.addClass('hide-panel');
+    $('#open-props').toggleClass('toggle-active');
+    $('#open-model-check').removeClass('toggle-active');
+    indentToggles();
   });
+
+  modelToggle.click( e => {
+    modelCheckerPanel.toggleClass('hide-panel');
+    propertiesPanel.addClass('hide-panel');
+    $('#open-model-check').toggleClass('toggle-active');
+    $('#open-props').removeClass('toggle-active');
+    indentToggles();
+  });
+
+
+
+
+
   let isValidating = false;
 
   validateButton.click(e => {
