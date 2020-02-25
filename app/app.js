@@ -54,8 +54,10 @@ $(function() {
   const propsToggle = $('#open-props');
   const modelToggle = $('#open-model-check');
 
+  $('#model-checker-input').val(''); // clear textarea on refresh
+
   function indentToggles() {
-    if(propsToggle.hasClass('toggle-active') || modelToggle.hasClass('toggle-active')){
+    if (propsToggle.hasClass('toggle-active') || modelToggle.hasClass('toggle-active')) {
       propsToggle.addClass('toggle-overlap');
       modelToggle.addClass('toggle-overlap');
     } else {
@@ -73,7 +75,7 @@ $(function() {
     indentToggles();
   });
 
-  modelToggle.click( e => {
+  modelToggle.click(e => {
     modelCheckerPanel.toggleClass('hide-panel');
     propertiesPanel.addClass('hide-panel');
     $('#open-model-check').toggleClass('toggle-active');
@@ -81,9 +83,34 @@ $(function() {
     indentToggles();
   });
 
+  $('#submit-model').on('click',function(event) {
+    const term = $('#model-checker-input').val();
 
+    saveDiagram((err, diagram) => {
 
+      const value = {
+        term: term,
+        diagram: diagram
+      };
 
+      $.ajax({
+        url: 'http://localhost:3000/users', // currently just for testing
+        type: 'POST',
+        crossDomain: true, // currently just for testing
+        data: JSON.stringify(value),
+        dataType: 'json',
+        success: function(response) {
+          response;
+          alert(response);
+        },
+        error: function(xhr, status, errorThrown) {
+          alert(status);
+        }
+      });
+
+    });
+
+  });
 
   let isValidating = false;
 

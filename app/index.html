@@ -33,11 +33,15 @@
       </div>
     </div>
     <div id="panel-toggle">
-      <div id="open-props" class="open-toggle toggle" title="Open properties panel"><span>Properties Panel</span></div>
-      <div id="open-model-check" class="open-toggle toggle" title="Open properties panel"><span>Model Checker Panel</span></div>
+      <div id="open-props" class="open-toggle toggle" title="Open properties panel"><span>Properties</span></div>
+      <div id="open-model-check" class="open-toggle toggle" title="Open model checking panel panel"><span>Model Checker</span></div>
     </div>
     <div class="side-panel hide-panel" id="properties-panel"></div>
-    <div class="side-panel hide-panel" id="model-checker-panel"></div>
+    <div class="side-panel hide-panel" id="model-checker-panel">
+      <textarea id="model-checker-input" placeholder="Enter here ..."></textarea>
+      <button id="submit-model">Check Model</button>
+      <div id="result"></div>
+    </div>
 
 
   </div>
