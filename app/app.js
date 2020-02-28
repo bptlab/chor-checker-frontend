@@ -88,28 +88,28 @@ $(function() {
 
     saveDiagram((err, diagram) => {
 
-      const value = {
+      const data = {
         term: term,
         diagram: diagram
       };
 
-      $.ajax({
-        url: 'http://localhost:3000/users', // currently just for testing
-        type: 'POST',
-        crossDomain: true, // currently just for testing
-        data: JSON.stringify(value),
-        dataType: 'json',
-        success: function(response) {
-          response;
-          alert(response);
+      fetch('http://localhost:3000/', {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json'
         },
-        error: function(xhr, status, errorThrown) {
-          alert(status);
-        }
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify(data)
+      }).then(response => {
+        return response.json();
+      }).then(json => {
+        console.log(json);
       });
-
     });
-
   });
 
   let isValidating = false;
