@@ -3,6 +3,7 @@ import blankXml from './diagrams/newDiagram.bpmn';
 import $ from 'jquery';
 import ChoreoModeler from 'chor-js/lib/Modeler';
 import Reporter from './lib/validator/Validator.js';
+import StateDisplay from './lib/state-display/StateDisplay';
 import propertiesPanelModule from 'bpmn-js-properties-panel';
 import propertiesProviderModule from './lib/properties-provider';
 
@@ -45,6 +46,7 @@ function saveDiagram(done) {
 
 $(function() {
   const reporter = new Reporter(modeler);
+  const stateDisplay = new StateDisplay(modeler);
   var downloadLink = $('#js-download-diagram');
   var downloadSvgLink = $('#js-download-svg');
   const validateButton = $('#js-validate');
@@ -108,6 +110,7 @@ $(function() {
         return response.json();
       }).then(json => {
         console.log(json);
+        stateDisplay.displayTrace(json.trace, document.getElementById('traceSelector'));
       });
     });
   });
