@@ -30,7 +30,7 @@ StateDisplay.prototype.displayTrace = function(trace, htmlContainer) {
   // plug the dropdown into the page
   this.htmlContainer.appendChild(this.select);
   this.displayState(0);
-}
+};
 
 StateDisplay.prototype.displayState = function(stateIndex) {
   this.clearOverlay();
@@ -46,11 +46,11 @@ StateDisplay.prototype.displayState = function(stateIndex) {
       html: `<div>${ state.marking[id].join(',') }</div>`
     }));
   }
-}
+};
 
 StateDisplay.prototype.clearOverlay = function() {
   this.overlayIDs.forEach(id => this.overlays.remove(id));
-}
+};
 
 StateDisplay.prototype.clearAll = function() {
   this.clearOverlay();
