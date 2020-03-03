@@ -1,7 +1,7 @@
 {
-  "name": "chor-js-demo",
-  "version": "1.0.0",
-  "description": "A demo showcasing the chor-js BPMN 2.0 choreography diagram modeler.",
+  "name": "chor-checker-frontend",
+  "version": "0.0.1",
+  "description": "Frontend for the choreography model checking framework.",
   "main": "app/app.js",
   "scripts": {
     "lint": "eslint .",
@@ -19,7 +19,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bptlab/chor-js-demo"
+    "url": "https://github.com/bptlab/chor-checker"
   },
   "devDependencies": {
     "esmify": "^2.1.1",
