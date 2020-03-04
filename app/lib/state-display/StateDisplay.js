@@ -2,8 +2,9 @@ import { getBBox } from 'diagram-js/lib/util/Elements';
 
 export default function StateDisplay(viewer) {
   this.overlays = viewer.get('overlays');
-  this.elementRegistry = viewer.get('elementRegistry');
+  this.elementRegistry = viewer.get('elementRegistry');this.canvas = viewer.get('canvas');
   this.overlayIDs = [];
+  this.cssMarkes = [];
   this.htmlContainer;
   this.select;
   this.trace;
@@ -36,15 +37,34 @@ StateDisplay.prototype.displayTrace = function(trace, htmlContainer) {
   this.displayState(0);
 };
 
+StateDisplay.prototype.addTaskHighlight = function(stateIndex) {
+  const currentTx = this.trace[stateIndex].curTx;
+  if (currentTx[1] === 'TaskTx') {
+    const shape = this.elementRegistry.get(currentTx[2]);
+    this.overlayIDs.push(this.overlays.add(shape.id, {
+      position: {
+        top: -10,
+        left: -10
+      },
+      html: `<div class="flow-marking-active">
+                <div class="timestamp">${currentTx[0]}</div>
+             </div>`
+    }));
+    this.canvas.addMarker(shape.id, 'highlight');
+    this.cssMarkes.push(shape.id);
+  }
+};
+
 StateDisplay.prototype.displayState = function(stateIndex) {
   this.clearOverlay();
   this.addSequenceFlowTraces(stateIndex);
+  this.addTaskHighlight(stateIndex);
 };
 
 StateDisplay.prototype.update = function() {
   this.clearOverlay();
   if (this.select && this.select.selectedIndex !== undefined) {
-    this.addSequenceFlowTraces(this.select.selectedIndex);
+    this.displayState(this.select.selectedIndex);
   }
 };
 
@@ -63,7 +83,7 @@ StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
       leftOffset = bbox.width / 2 - 6; // 6 for the arrow
       topOffset = bbox.height / 2;
     }
-    const cssClass = state.marking[id][0] ?'flow-marking-active' :'flow-marking-inactive';
+    const cssClass = state.marking[id][0] ? 'flow-marking-active' : 'flow-marking-inactive';
 
     this.overlayIDs.push(this.overlays.add(id, {
       position: {
@@ -77,6 +97,7 @@ StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
 
 StateDisplay.prototype.clearOverlay = function() {
   this.overlayIDs.forEach(id => this.overlays.remove(id));
+  this.cssMarkes.forEach(id => this.canvas.removeMarker(id, 'highlight'));
 };
 
 StateDisplay.prototype.clearAll = function() {
