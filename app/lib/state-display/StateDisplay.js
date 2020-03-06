@@ -2,7 +2,8 @@ import { getBBox } from 'diagram-js/lib/util/Elements';
 
 export default function StateDisplay(viewer) {
   this.overlays = viewer.get('overlays');
-  this.elementRegistry = viewer.get('elementRegistry');this.canvas = viewer.get('canvas');
+  this.elementRegistry = viewer.get('elementRegistry');
+  this.canvas = viewer.get('canvas');
   this.overlayIDs = [];
   this.cssMarkes = [];
   this.htmlContainer;
@@ -55,10 +56,31 @@ StateDisplay.prototype.addTaskHighlight = function(stateIndex) {
   }
 };
 
+StateDisplay.prototype.addMessageValues = function(stateIndex) {
+  const messageValues = this.trace[stateIndex].messageValues;
+  for (let taskID in messageValues) {
+    const task = this.elementRegistry.get(taskID);
+    const message = task.businessObject.messageFlowRef.find(
+      ref => ref.sourceRef === task.businessObject.initiatingParticipantRef).messageRef;
+    const messageShape = this.elementRegistry.get(message.id);
+    if (messageShape.hidden === false) {
+      this.overlayIDs.push(this.overlays.add(message.id, {
+        position: {
+          top: 3,
+          left: 6
+        },
+        html: `<div class="flow-marking-inactive">
+                ${messageValues[taskID]}</div>`
+      }));
+    }
+  }
+};
+
 StateDisplay.prototype.displayState = function(stateIndex) {
   this.clearOverlay();
   this.addSequenceFlowTraces(stateIndex);
   this.addTaskHighlight(stateIndex);
+  this.addMessageValues(stateIndex);
 };
 
 StateDisplay.prototype.update = function() {
