@@ -86,12 +86,12 @@ $(function() {
   });
 
   $('#submit-model').on('click',function(event) {
-    const term = $('#model-checker-input').val();
+    const property = $('#model-checker-input').val();
 
     saveDiagram((err, diagram) => {
 
       const data = {
-        term: term,
+        property: property,
         diagram: diagram
       };
 
