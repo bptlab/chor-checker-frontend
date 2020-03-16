@@ -15,32 +15,34 @@ html {
 }
 
 #panel-toggle {
-  z-index: 10;
+  flex-shrink: 0;
+  width: 20px;
+
   display: flex;
-  min-width: 20px;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 
-  .toggle {
-    flex: 0 0;
-    min-height: 95px;
-    max-width: 20px;
+  background-color: #FAFAFA;
+  border-left: solid 1px #CCC;
+
+  & > div {
+    height: 95px;
+    width: 20px;
+
     display: flex;
     justify-content: center;
     align-items: center;
 
-    background-color: #FAFAFA;
-    border-left: solid 1px #CCC;
-    border-top: solid 1px #CCC;
     border-bottom: solid 1px #CCC;
-    border-radius: 2px;
-    margin-bottom: 10px;
-    font-weight: bold;
-    font-family: Arial, sans-serif;
+    cursor: pointer;
 
-    span {
-      font-size: 10px;
+    &:first-child {
+      border-top: solid 1px #CCC;
+    }
+
+    & > span {
+      font-size: 11px;
       transform: rotate(-90deg);
       white-space: nowrap;
       -moz-user-select: none;
@@ -48,16 +50,42 @@ html {
       -ms-user-select: none;
       user-select: none;
     }
+
+    &.active {
+      border-left: 2px solid #52B415;
+    }
+  }
+}
+
+.side-panel {
+  background-color: #FAFAFA;
+  max-width: 250px;
+  min-width: 250px;
+  min-height: 100%;
+  border-left: 1px solid #CCC;
+
+  > .bpp-properties-panel {
+    background-color: #FAFAFA;
+  }
+}
+
+#model-checker-panel {
+  padding: 8px;
+
+  #model-checker-input {
+    min-width: 100%;
+    min-height: 90%;
+    resize: none;
   }
 
-  .toggle-active {
-    color: #52B415;
+  #submit-model {
+    float: right;
+    margin-top: 10px;
   }
+}
 
-  .toggle-overlap {
-    margin-right: -2px;
-  }
-
+.hidden {
+  display: none;
 }
 
 .content {
@@ -66,42 +94,9 @@ html {
   height: 100%;
   display: flex;
 
-
   #canvas {
     flex-grow: 1;
     position: relative;
-  }
-
-  .side-panel {
-    background-color: #FAFAFA;
-    max-width: 250px;
-    min-width: 250px;
-    min-height: 100%;
-    border-left: solid 1px #CCC;
-
-    > .bpp-properties-panel {
-      background-color: #FAFAFA;
-    }
-  }
-
-  .hide-panel {
-    display: none;
-    border-left: none;
-  }
-
-  #model-checker-panel {
-    padding: 8px;
-
-    #model-checker-input {
-      min-width: 100%;
-      min-height: 90%;
-      resize: none;
-    }
-
-    #submit-model {
-      float: right;
-      margin-top: 10px;
-    }
   }
 
   > .message {
@@ -144,21 +139,12 @@ html {
   }
 
   .canvas {
+    display: block;
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-  }
-
-  .canvas {
-    display: none;
-  }
-
-  &.with-diagram {
-    .canvas {
-      display: block;
-    }
   }
 }
 
@@ -194,8 +180,9 @@ html {
     color: rgb(51, 51, 51);
   }
 
-  a.active:hover, button:hover {
+  a.hover, button:hover {
     color: #FF7400;
+    cursor: pointer;
   }
 
   .selected {
@@ -203,16 +190,6 @@ html {
   }
 
   button {
-    cursor: pointer;
-  }
-
-  a {
-    opacity: 0.3;
-    cursor: default;
-  }
-
-  a.active {
-    opacity: 1;
     cursor: pointer;
   }
 }

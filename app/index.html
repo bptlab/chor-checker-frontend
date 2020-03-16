@@ -21,11 +21,11 @@
     }
   </style>
 
-  <title>Choreography Checker</title>
+  <title>[chor-checker-frontend]</title>
 </head>
 <body>
 
-  <div class="content with-diagram" id="js-drop-zone">
+  <div class="content">
     <div id="canvas">
       <div class="git-info" >
           <a class="icon-github-circled" href="https://github.com/bptlab/chor-checker" target="_blank"
@@ -33,29 +33,28 @@
       </div>
     </div>
     <div id="panel-toggle">
-      <div id="open-props" class="open-toggle toggle" title="Open properties panel"><span>Properties</span></div>
-      <div id="open-model-check" class="open-toggle toggle" title="Open model checking panel panel"><span>Model Checker</span></div>
-    </div>
-    <div class="side-panel hide-panel" id="properties-panel"></div>
-    <div class="side-panel hide-panel" id="model-checker-panel">
-      <textarea id="model-checker-input" placeholder="Enter here ..."></textarea>
+        <div data-toggle-panel="properties-panel" title="Toggle properties panel"><span>Properties</span></div>
+        <div data-toggle-panel="model-checker-panel" title="Toggle model checker panel"><span>Model Checker</span></div>
+      </div>
+    <div id="properties-panel" class="side-panel hidden"></div>
+    <div id="model-checker-panel" class="side-panel hidden">
+      <textarea id="model-checker-input" placeholder="Enter here..."></textarea>
       <button id="submit-model">Check Model</button>
-      <div id="traceSelector"></div>
+      <div id="trace-selector"></div>
     </div>
-
-
   </div>
 
   <div class="buttons">
     <button id="js-new-diagram" class="icon-doc-new" title="Create new empty diagram"></button>
-    <button class="icon-folder" title="Select BPMN XML file" onclick="document.getElementById('file-input').click();"></button>
-    <input id="file-input" name="name" type="file" accept=".bpmn, .xml" style="display: none;" >
+    <button id="js-open-file" class="icon-folder" title="Select BPMN XML file"></button>
     <div class="divider"></div>
-    <a id="js-download-diagram" class="icon-file-code" href title="Download BPMN XML file"></a>
-    <a id="js-download-svg" class="icon-file-image" href title="Download as SVG image"></a>
+    <a id="js-download-diagram" class="icon-file-code" title="Download BPMN XML file"></a>
+    <a id="js-download-svg" class="icon-file-image" title="Download as SVG image"></a>
     <div class="divider"></div>
-    <button class="icon-bug" id="js-validate" title="Check diagram for problems"></button>
+    <button id="js-validate" class="icon-bug" title="Check diagram for problems"></button>
   </div>
+
+  <input id="file-input" name="name" type="file" accept=".bpmn, .xml" style="display: none;" />
 
   <script src="./app.js"></script>
 

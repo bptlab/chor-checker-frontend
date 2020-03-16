@@ -1,29 +1,31 @@
-import xml from './diagrams/train.bpmn';
-import blankXml from './diagrams/newDiagram.bpmn';
-import $ from 'jquery';
+import PropertiesPanelModule from 'bpmn-js-properties-panel';
 import ChoreoModeler from 'chor-js/lib/Modeler';
-import Reporter from './lib/validator/Validator.js';
-import StateDisplay from './lib/state-display/StateDisplay';
-import propertiesPanelModule from 'bpmn-js-properties-panel';
-import propertiesProviderModule from './lib/properties-provider';
 
-var modeler = new ChoreoModeler({
+import xml from './diagrams/pizzaDelivery.bpmn';
+import blankXml from './diagrams/newDiagram.bpmn';
+import Reporter from './lib/validator/Validator.js';
+import PropertiesProviderModule from './lib/properties-provider';
+import StateDisplay from './lib/state-display/StateDisplay.js';
+
+let lastFile;
+let isValidating = false;
+
+// create and configure a chor-js instance
+const modeler = new ChoreoModeler({
   container: '#canvas',
   propertiesPanel: {
     parent: '#properties-panel'
   },
   additionalModules: [
-    propertiesPanelModule,
-    propertiesProviderModule
+    PropertiesPanelModule,
+    PropertiesProviderModule
   ],
-
   keyboard: {
     bindTo: document
   }
 });
 
-renderModel(xml);
-
+// display the given model (XML representation)
 function renderModel(newXml) {
   modeler.importXML(newXml, {
     // choreoID: '_choreo1'
@@ -34,65 +36,125 @@ function renderModel(newXml) {
   });
 }
 
-function saveSVG(done) {
-  modeler.saveSVG(done);
-}
-
-function saveDiagram(done) {
-  modeler.saveXML({ format: true }, function(err, xml) {
-    done(err, xml);
-  });
-}
-
-$(function() {
-  const reporter = new Reporter(modeler);
-  const stateDisplay = new StateDisplay(modeler);
-  var downloadLink = $('#js-download-diagram');
-  var downloadSvgLink = $('#js-download-svg');
-  const validateButton = $('#js-validate');
-  const propertiesPanel = $('#properties-panel');
-
-  const modelCheckerPanel = $('#model-checker-panel');
-  const propsToggle = $('#open-props');
-  const modelToggle = $('#open-model-check');
-
-  $('#model-checker-input').val(''); // clear textarea on refresh
-
-  function indentToggles() {
-    if (propsToggle.hasClass('toggle-active') || modelToggle.hasClass('toggle-active')) {
-      propsToggle.addClass('toggle-overlap');
-      modelToggle.addClass('toggle-overlap');
-    } else {
-      propsToggle.removeClass('toggle-overlap');
-      modelToggle.removeClass('toggle-overlap');
-    }
-
+// returns the file name of the diagram currently being displayed
+function diagramName() {
+  if (lastFile) {
+    return lastFile.name;
   }
+  return 'diagram.bpmn';
+}
 
-  propsToggle.click(e => {
-    propertiesPanel.toggleClass('hide-panel');
-    modelCheckerPanel.addClass('hide-panel');
-    $('#open-props').toggleClass('toggle-active');
-    $('#open-model-check').removeClass('toggle-active');
-    indentToggles();
+document.addEventListener('DOMContentLoaded', () => {
+  // download diagram as XML
+  const downloadLink = document.getElementById('js-download-diagram');
+  downloadLink.addEventListener('click', async e => {
+    await modeler.saveXML({ format: true }, (err, xml) => {
+      if (err) {
+        e.preventDefault();
+        e.stopPropagation();
+        alert(err);
+      } else {
+        downloadLink['href'] = 'data:application/bpmn20-xml;charset=UTF-8,' + encodeURIComponent(xml);
+        downloadLink['download'] = diagramName();
+      }
+    });
   });
 
-  modelToggle.click(e => {
-    modelCheckerPanel.toggleClass('hide-panel');
-    propertiesPanel.addClass('hide-panel');
-    $('#open-model-check').toggleClass('toggle-active');
-    $('#open-props').removeClass('toggle-active');
-    indentToggles();
+  // download diagram as SVG
+  const downloadSvgLink = document.getElementById('js-download-svg');
+  downloadSvgLink.addEventListener('click', async e => {
+    await modeler.saveSVG((err, svg) => {
+      if (err) {
+        e.preventDefault();
+        e.stopPropagation();
+        alert(err);
+      } else {
+        downloadSvgLink['href'] = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+        downloadSvgLink['download'] = diagramName() + '.svg';
+      }
+    });
   });
 
-  $('#submit-model').on('click',function(event) {
-    const property = $('#model-checker-input').val();
+  // open file dialog
+  document.getElementById('js-open-file').addEventListener('click', e => {
+    document.getElementById('file-input').click();
+  });
 
-    saveDiagram((err, diagram) => {
+  // toggle side panels
+  const panels = Array.prototype.slice.call(
+    document.getElementById('panel-toggle').children
+  );
+  panels.forEach(panel => {
+    panel.addEventListener('click', () => {
+      panels.forEach(otherPanel => {
+        if (panel === otherPanel && !panel.classList.contains('active')) {
+          // show clicked panel if it is not already active, otherwise hide it as well
+          panel.classList.add('active');
+          document.getElementById(panel.dataset.togglePanel).classList.remove('hidden');
+        } else {
+          // hide all other panels
+          otherPanel.classList.remove('active');
+          document.getElementById(otherPanel.dataset.togglePanel).classList.add('hidden');
+        }
+      });
+    });
+  });
 
+  // create new diagram
+  const newDiagram = document.getElementById('js-new-diagram');
+  newDiagram.addEventListener('click', e => {
+    renderModel(blankXml);
+    lastFile = false;
+  });
+
+  // load diagram from disk
+  const loadDiagram = document.getElementById('file-input');
+  loadDiagram.addEventListener('change', e => {
+    const file = loadDiagram.files[0];
+    if (file) {
+      const reader = new FileReader();
+      lastFile = file;
+      reader.addEventListener('load', () => {
+        renderModel(reader.result);
+      }, false);
+      reader.readAsText(file);
+    }
+  });
+
+  // validation logic and toggle
+  const reporter = new Reporter(modeler);
+  const validateButton = document.getElementById('js-validate');
+  validateButton.addEventListener('click', e => {
+    isValidating = !isValidating;
+    if (isValidating) {
+      reporter.validateDiagram();
+      validateButton.classList.add('selected');
+      validateButton['title'] = 'Disable checking';
+    } else {
+      reporter.clearAll();
+      validateButton.classList.remove('selected');
+      validateButton['title'] = 'Check diagram for problems';
+    }
+  });
+  modeler.on('commandStack.changed', () => {
+    if (isValidating) {
+      reporter.validateDiagram();
+    }
+  });
+  modeler.on('import.render.complete', () => {
+    if (isValidating) {
+      reporter.validateDiagram();
+    }
+  });
+
+  // state display
+  const stateDisplay = new StateDisplay(modeler);
+  document.getElementById('submit-model').addEventListener('click', () => {
+    const property = document.getElementById('model-checker-input').value;
+    modeler.saveXML({}, (err, xml) => {
       const data = {
         property: property,
-        diagram: diagram
+        diagram: xml
       };
 
       fetch('http://localhost:3000/', {
@@ -110,104 +172,13 @@ $(function() {
         return response.json();
       }).then(json => {
         console.log(json);
-        stateDisplay.displayTrace(json.trace, document.getElementById('traceSelector'));
+        stateDisplay.displayTrace(json.trace, document.getElementById('trace-selector'));
       });
     });
-  });
-
-  let isValidating = false;
-
-  validateButton.click(e => {
-    if (!isValidating) {
-      isValidating = true;
-      reporter.validateDiagram();
-      $(e.target).addClass('selected');
-      $(e.target).prop('title', 'Disable checking');
-    } else {
-      isValidating = false;
-      reporter.clearAll();
-      $(e.target).removeClass('selected');
-      $(e.target).prop('title', 'Check diagram for problems');
-
-    }
-  });
-
-  $('.buttons a').click(function(e) {
-    if (!$(this).is('.active')) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
-
-  function setEncoded(link, name, data) {
-    var encodedData = encodeURIComponent(data);
-    if (data) {
-      link.addClass('active').attr({
-        'href': 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData,
-        'download': name
-      });
-    } else {
-      link.removeClass('active');
-    }
-  }
-
-  var exportArtifacts = debounce(function() {
-    saveSVG(function(err, svg) {
-      setEncoded(downloadSvgLink, 'diagram.svg', err ? null : svg);
-    });
-    saveDiagram(function(err, xml) {
-      setEncoded(downloadLink, 'diagram.bpmn', err ? null : xml);
-    });
-  }, 500);
-
-  $('#js-new-diagram').click(function(e) {
-    renderModel(blankXml);
-    exportArtifacts();
-  });
-
-  $('input#file-input').change(function(e) {
-    var reader = new FileReader();
-    var file = document.querySelector('input[type=file]').files[0];
-    reader.addEventListener('load', function() {
-      const newXml = reader.result;
-      renderModel(newXml);
-      exportArtifacts();
-    }, false);
-
-    if (file) {
-      reader.readAsText(file);
-    }
-
-  });
-
-  exportArtifacts();
-  modeler.on('commandStack.changed', exportArtifacts);
-  modeler.on('commandStack.changed', function() {
-    if (isValidating) {
-      reporter.validateDiagram();
-    }
-  });
-  modeler.on('import.render.complete', function() {
-    if (isValidating) {
-      reporter.validateDiagram();
-    }
   });
 });
 
 // expose bpmnjs to window for debugging purposes
 window.bpmnjs = modeler;
 
-// helpers //////////////////////
-
-function debounce(fn, timeout) {
-
-  var timer;
-
-  return function() {
-    if (timer) {
-      clearTimeout(timer);
-    }
-
-    timer = setTimeout(fn, timeout);
-  };
-}
+renderModel(xml);
