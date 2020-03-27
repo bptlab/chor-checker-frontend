@@ -47,9 +47,7 @@ StateDisplay.prototype.addTaskHighlight = function(stateIndex) {
         top: -10,
         left: -10
       },
-      html: `<div class="flow-marking-active">
-                <div class="timestamp">${currentTx[0]}</div>
-             </div>`
+      html: `<div class="circle-overlay task-active">${ currentTx[0] }</div>`
     }));
     this.canvas.addMarker(shape.id, 'highlight');
     this.cssMarkes.push(shape.id);
@@ -69,8 +67,7 @@ StateDisplay.prototype.addMessageValues = function(stateIndex) {
           top: 3,
           left: 6
         },
-        html: `<div class="flow-marking-inactive">
-                ${messageValues[taskID]}</div>`
+        html: `<div class="circle-overlay message-value">${ messageValues[taskID] }</div>`
       }));
     }
   }
@@ -93,6 +90,7 @@ StateDisplay.prototype.update = function() {
 StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
   const state = this.trace[stateIndex];
   for (let id in state.marking) {
+    // calculate position of the overlay
     const sf = this.elementRegistry.get(id);
     const bbox = getBBox([sf]);
     let topOffset = 0;
@@ -105,14 +103,15 @@ StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
       leftOffset = bbox.width / 2 - 6; // 6 for the arrow
       topOffset = bbox.height / 2;
     }
-    const cssClass = state.marking[id][0] ? 'flow-marking-active' : 'flow-marking-inactive';
+    const cssClass = state.marking[id][0] ? 'flow-active' : 'flow-inactive';
 
+    // add overlay
     this.overlayIDs.push(this.overlays.add(id, {
       position: {
         top: topOffset - 10,
         left: leftOffset - 10
       },
-      html: `<div class=${cssClass}><div class="timestamp">${state.marking[id][1]}</div></div>`
+      html: `<div class="circle-overlay ${ cssClass }">${ state.marking[id][1] }</div>`
     }));
   }
 };
