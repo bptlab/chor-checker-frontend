@@ -172,7 +172,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return response.json();
       }).then(json => {
         console.log(json);
-        stateDisplay.displayTrace(json.trace, document.getElementById('trace-selector'));
+        if (json.result) {
+          alert('Property satisfied');
+        } else {
+          stateDisplay.displayTrace(json.trace, document.getElementById('trace-selector'));
+        }
       });
     });
   });
