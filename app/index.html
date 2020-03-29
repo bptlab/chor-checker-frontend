@@ -38,9 +38,35 @@
       </div>
     <div id="properties-panel" class="side-panel hidden"></div>
     <div id="model-checker-panel" class="side-panel hidden">
-      <textarea id="model-checker-input" placeholder="Enter here..."></textarea>
-      <button id="submit-model">Check Model</button>
-      <div id="trace-selector"></div>
+      <div class="bpp-properties-panel">
+        <div class="bpp-properties">
+          <div class="bpp-properties-header">
+            <div class="label">Model Checker</div>
+          </div>
+          <div class="bpp-properties-group">
+            <span class="group-toggle"></span>
+            <span class="group-label">Property</span>
+            <div class="bpp-properties-entry bpp-textbox">
+              <label>Property to check</label>
+              <div class="bpp-field-wrapper">
+                <div id="model-checker-input" name="model-checker-input" contenteditable="true"></div>
+              </div>
+            </div>
+            <div class="bpp-properties-entry">
+              <div class="bpp-field-wrapper">
+                <button id="submit-model">Check</button>
+              </div>
+            </div>
+          </div>
+          <div class="bpp-properties-group">
+            <span class="group-toggle"></span>
+            <span class="group-label">Result</span>
+            <div class="bpp-properties-entry" id="model-checker-result">
+              No property checked yet
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

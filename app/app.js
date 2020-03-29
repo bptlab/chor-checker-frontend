@@ -1,7 +1,7 @@
 import PropertiesPanelModule from 'bpmn-js-properties-panel';
 import ChoreoModeler from 'chor-js/lib/Modeler';
 
-import xml from './diagrams/pizzaDelivery.bpmn';
+import xml from './diagrams/train.bpmn';
 import blankXml from './diagrams/newDiagram.bpmn';
 import Reporter from './lib/validator/Validator.js';
 import PropertiesProviderModule from './lib/properties-provider';
@@ -149,37 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // state display
   const stateDisplay = new StateDisplay(modeler);
-  document.getElementById('submit-model').addEventListener('click', () => {
-    const property = document.getElementById('model-checker-input').value;
-    modeler.saveXML({}, (err, xml) => {
-      const data = {
-        property: property,
-        diagram: xml
-      };
-
-      fetch('http://localhost:3000/', {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify(data)
-      }).then(response => {
-        return response.json();
-      }).then(json => {
-        console.log(json);
-        if (json.result) {
-          alert('Property satisfied');
-        } else {
-          stateDisplay.displayTrace(json.trace, document.getElementById('trace-selector'));
-        }
-      });
-    });
-  });
 });
 
 // expose bpmnjs to window for debugging purposes

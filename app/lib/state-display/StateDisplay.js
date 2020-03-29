@@ -1,40 +1,76 @@
 import { getBBox } from 'diagram-js/lib/util/Elements';
 
 export default function StateDisplay(viewer) {
+  this.viewer = viewer;
   this.overlays = viewer.get('overlays');
   this.elementRegistry = viewer.get('elementRegistry');
   this.canvas = viewer.get('canvas');
   this.overlayIDs = [];
   this.cssMarkes = [];
-  this.htmlContainer;
-  this.select;
   this.trace;
-  viewer.on('commandStack.changed', () => this.update());
+  this.results = document.getElementById('model-checker-result');
+  // viewer.on('commandStack.changed', () => this.update());
+  this.initDOM();
 }
 
-StateDisplay.prototype.displayTrace = function(trace, htmlContainer) {
+StateDisplay.prototype.initDOM = function() {
+  document.getElementById('submit-model').addEventListener('click', () => {
+    const property = document.getElementById('model-checker-input').innerText;
+    this.clearAll();
+    this.viewer.saveXML({}, (err, xml) => {
+      const data = {
+        property: property,
+        diagram: xml
+      };
+
+      fetch('http://localhost:3000/', {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify(data)
+      }).then(async response => {
+        if (response.status === 500) {
+          throw await response.json();
+        }
+        return response.json();
+      }).then(json => {
+        console.log(json);
+        if (json.result) {
+          this.results.innerHTML = 'Property satisfied';
+        } else {
+          this.displayTrace(json.trace);
+        }
+      }).catch(err => {
+        this.results.innerHTML = 'Error:<br />' + err.error;
+      });
+    });
+  });
+};
+
+StateDisplay.prototype.displayTrace = function(trace) {
   // clear previous trace and setup
   this.clearAll();
-  this.htmlContainer = htmlContainer;
   this.trace = trace;
 
-  // create selection dropdown element
-  this.select = document.createElement('select');
+  // create step selection markup
   this.trace.forEach((state, index) => {
-    const option = document.createElement('option');
-    option.value = index;
-    option.innerHTML = index;
-    this.select.appendChild(option);
+    const step = document.createElement('div');
+    step.innerHTML = state.curTx.join(' | ');
+    step.addEventListener('click', e => {
+      this.displayState(index);
+      Array.prototype.slice.call(this.results.children).forEach(otherStep => {
+        otherStep.classList.remove('state-active');
+      });
+      step.classList.add('state-active');
+    });
+    this.results.appendChild(step);
   });
-
-  // listen to changes when using the dropdown
-  const self = this;
-  this.select.addEventListener('change', event => {
-    self.displayState(self.select.selectedIndex);
-  });
-
-  // plug the dropdown into the page
-  this.htmlContainer.appendChild(this.select);
   this.displayState(0);
 };
 
@@ -80,13 +116,6 @@ StateDisplay.prototype.displayState = function(stateIndex) {
   this.addMessageValues(stateIndex);
 };
 
-StateDisplay.prototype.update = function() {
-  this.clearOverlay();
-  if (this.select && this.select.selectedIndex !== undefined) {
-    this.displayState(this.select.selectedIndex);
-  }
-};
-
 StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
   const state = this.trace[stateIndex];
   for (let id in state.marking) {
@@ -123,7 +152,5 @@ StateDisplay.prototype.clearOverlay = function() {
 
 StateDisplay.prototype.clearAll = function() {
   this.clearOverlay();
-  if (this.htmlContainer && this.select) {
-    this.htmlContainer.removeChild(this.select);
-  }
+  this.results.innerHTML = '';
 };
