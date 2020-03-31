@@ -119,6 +119,11 @@ StateDisplay.prototype.displayState = function(stateIndex) {
 StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
   const state = this.trace[stateIndex];
   for (let id in state.marking) {
+    // skip flows with negative (PAST) timestamp
+    if (state.marking[id][1] < 0) {
+      continue;
+    }
+
     // calculate position of the overlay
     const sf = this.elementRegistry.get(id);
     const bbox = getBBox([sf]);
