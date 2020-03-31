@@ -47,6 +47,7 @@ StateDisplay.prototype.initDOM = function() {
           this.displayTrace(json.trace);
         }
       }).catch(err => {
+        console.log(err);
         this.results.innerHTML = 'Error:<br />' + err.error;
       });
     });
@@ -59,19 +60,27 @@ StateDisplay.prototype.displayTrace = function(trace) {
   this.trace = trace;
 
   // create step selection markup
-  this.trace.forEach((state, index) => {
-    const step = document.createElement('div');
-    step.innerHTML = state.curTx.join(' | ');
-    step.addEventListener('click', e => {
-      this.displayState(index);
-      Array.prototype.slice.call(this.results.children).forEach(otherStep => {
-        otherStep.classList.remove('state-active');
-      });
-      step.classList.add('state-active');
+  if (this.trace && this.trace.length > 0) {
+    this.trace.forEach((state, index) => {
+      const step = document.createElement('div');
+      if (state.loop) {
+        step.innerHTML = 'loop to ' + state.loop;
+      } else {
+        step.innerHTML = (index + 1) + ': ' + state.curTx.join(' | ');
+        step.addEventListener('click', e => {
+          this.displayState(index);
+          Array.prototype.slice.call(this.results.children).forEach(otherStep => {
+            otherStep.classList.remove('state-active');
+          });
+          step.classList.add('state-active');
+        });
+      }
+      this.results.appendChild(step);
     });
-    this.results.appendChild(step);
-  });
-  this.displayState(0);
+    this.displayState(0);
+  } else {
+    this.results.innerHTML = 'Property violated, but no trace returned';
+  }
 };
 
 StateDisplay.prototype.addTaskHighlight = function(stateIndex) {
@@ -118,11 +127,9 @@ StateDisplay.prototype.displayState = function(stateIndex) {
 
 StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
   const state = this.trace[stateIndex];
-  for (let id in state.marking) {
-    // skip flows with negative (PAST) timestamp
-    if (state.marking[id][1] < 0) {
-      continue;
-    }
+  state.marking.forEach(token => {
+    const id = token[0];
+    const timestamp = token[1];
 
     // calculate position of the overlay
     const sf = this.elementRegistry.get(id);
@@ -137,7 +144,6 @@ StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
       leftOffset = bbox.width / 2 - 6; // 6 for the arrow
       topOffset = bbox.height / 2;
     }
-    const cssClass = state.marking[id][0] ? 'flow-active' : 'flow-inactive';
 
     // add overlay
     this.overlayIDs.push(this.overlays.add(id, {
@@ -145,9 +151,9 @@ StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
         top: topOffset - 10,
         left: leftOffset - 10
       },
-      html: `<div class="circle-overlay ${ cssClass }">${ state.marking[id][1] }</div>`
+      html: `<div class="circle-overlay flow-active">${ timestamp }</div>`
     }));
-  }
+  });
 };
 
 StateDisplay.prototype.clearOverlay = function() {
