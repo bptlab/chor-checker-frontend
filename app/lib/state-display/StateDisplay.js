@@ -64,7 +64,9 @@ StateDisplay.prototype.displayTrace = function(trace) {
     this.trace.forEach((state, index) => {
       const step = document.createElement('div');
       if (state.loop) {
-        step.innerHTML = 'loop to ' + state.loop;
+        step.innerHTML = 'Loop to ' + state.loop;
+      } else if (state.stuttering) {
+        step.innerHTML = 'Stuttering';
       } else {
         step.innerHTML = (index + 1) + ': ' + state.curTx.join(' | ');
         step.addEventListener('click', e => {
