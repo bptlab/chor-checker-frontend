@@ -68,7 +68,7 @@ StateDisplay.prototype.displayTrace = function(trace) {
       } else if (state.stuttering) {
         step.innerHTML = 'Stuttering';
       } else {
-        step.innerHTML = (index + 1) + ': ' + state.curTx.join(' | ');
+        step.innerHTML = (index + 1) + ': ' + state.curTx.type + ' (' + state.curTx.target + ')';
         step.addEventListener('click', e => {
           this.displayState(index);
           Array.prototype.slice.call(this.results.children).forEach(otherStep => {
@@ -87,14 +87,14 @@ StateDisplay.prototype.displayTrace = function(trace) {
 
 StateDisplay.prototype.addTaskHighlight = function(stateIndex) {
   const currentTx = this.trace[stateIndex].curTx;
-  if (currentTx[1] === 'TaskTx') {
-    const shape = this.elementRegistry.get(currentTx[2]);
+  if (currentTx.type === 'TaskTx') {
+    const shape = this.elementRegistry.get(currentTx.target);
     this.overlayIDs.push(this.overlays.add(shape.id, {
       position: {
         top: -10,
         left: -10
       },
-      html: `<div class="circle-overlay task-active">${ currentTx[0] }</div>`
+      html: `<div class="circle-overlay task-active">${ this.trace[stateIndex].timestamp }</div>`
     }));
     this.canvas.addMarker(shape.id, 'highlight');
     this.cssMarkes.push(shape.id);
