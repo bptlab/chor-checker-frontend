@@ -1,14 +1,13 @@
 import PropertiesPanelModule from 'bpmn-js-properties-panel';
+import PropertiesProviderModule from './lib/properties-provider';
+
 import ChoreoModeler from 'chor-js/lib/Modeler';
 
 import xml from './diagrams/train.bpmn';
 import blankXml from './diagrams/newDiagram.bpmn';
-import Reporter from './lib/validator/Validator.js';
-import PropertiesProviderModule from './lib/properties-provider';
 import StateDisplay from './lib/state-display/StateDisplay.js';
 
 let lastFile;
-let isValidating = false;
 
 // create and configure a chor-js instance
 const modeler = new ChoreoModeler({
@@ -118,32 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderModel(reader.result);
       }, false);
       reader.readAsText(file);
-    }
-  });
-
-  // validation logic and toggle
-  const reporter = new Reporter(modeler);
-  const validateButton = document.getElementById('js-validate');
-  validateButton.addEventListener('click', e => {
-    isValidating = !isValidating;
-    if (isValidating) {
-      reporter.validateDiagram();
-      validateButton.classList.add('selected');
-      validateButton['title'] = 'Disable checking';
-    } else {
-      reporter.clearAll();
-      validateButton.classList.remove('selected');
-      validateButton['title'] = 'Check diagram for problems';
-    }
-  });
-  modeler.on('commandStack.changed', () => {
-    if (isValidating) {
-      reporter.validateDiagram();
-    }
-  });
-  modeler.on('import.render.complete', () => {
-    if (isValidating) {
-      reporter.validateDiagram();
     }
   });
 
