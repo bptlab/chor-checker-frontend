@@ -1,14 +1,14 @@
 {
   "name": "chor-checker-frontend",
   "version": "0.0.1",
-  "description": "Frontend for the choreography model checking framework.",
+  "description": "Frontend for the blockchain process model checking framework.",
   "main": "app/app.js",
   "scripts": {
-    "lint": "eslint .",
     "dev": "parcel app/index.html -p 9013"
   },
   "keywords": [
-    "choreography-modeler"
+    "bpmn",
+    "blockchain"
   ],
   "author": {
     "name": "Jan Ladleif",
@@ -32,16 +32,14 @@
   ],
   "devDependencies": {
     "@babel/core": "^7.8.7",
-    "eslint": "^4.19.1",
-    "eslint-plugin-bpmn-io": "^0.7.0",
     "less": "^3.11.1",
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-stringify-anything": "^1.2.0"
   },
   "dependencies": {
-    "bpmn-js-properties-panel": "^0.33.2",
-    "chor-js": "^0.6.1",
-    "diagram-js": "^6.6.1",
+    "bpmn-js-properties-panel": "^0.37.2",
+    "bpmn-js": "^7.3.1",
+    "diagram-js": "^6.7.1",
     "inherits": "^2.0.4"
   }
 }

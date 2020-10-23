@@ -14,42 +14,42 @@ export default function StateDisplay(viewer) {
 }
 
 StateDisplay.prototype.initDOM = function() {
-  document.getElementById('submit-model').addEventListener('click', () => {
+  document.getElementById('submit-model').addEventListener('click', async () => {
     const property = document.getElementById('model-checker-input').innerText;
     this.clearAll();
-    this.viewer.saveXML({}, (err, xml) => {
-      const data = {
-        property: property,
-        diagram: xml
-      };
+    const result = await this.viewer.saveXML({});
+    const xml = result.xml;
+    const data = {
+      property: property,
+      diagram: xml
+    };
 
-      fetch('http://localhost:3000/', {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify(data)
-      }).then(async response => {
-        if (response.status === 500) {
-          throw await response.json();
-        }
-        return response.json();
-      }).then(json => {
-        console.log(json);
-        if (json.result) {
-          this.results.innerHTML = 'Property satisfied';
-        } else {
-          this.displayTrace(json.trace);
-        }
-      }).catch(err => {
-        console.log(err);
-        this.results.innerHTML = 'Error:<br />' + err.error;
-      });
+    fetch('http://localhost:3000/', {
+      method: 'POST',
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+      body: JSON.stringify(data)
+    }).then(async response => {
+      if (response.status === 500) {
+        throw await response.json();
+      }
+      return response.json();
+    }).then(json => {
+      console.log(json);
+      if (json.result) {
+        this.results.innerHTML = 'Property satisfied';
+      } else {
+        this.displayTrace(json.trace);
+      }
+    }).catch(err => {
+      console.log(err);
+      this.results.innerHTML = 'Error:<br />' + err.error;
     });
   });
 };
@@ -68,7 +68,7 @@ StateDisplay.prototype.displayTrace = function(trace) {
       } else if (state.stuttering) {
         step.innerHTML = 'Stuttering';
       } else {
-        step.innerHTML = (index + 1) + ': ' + state.curTx.type + ' (' + state.curTx.target + ')';
+        step.innerHTML = (index + 1);
         step.addEventListener('click', e => {
           this.displayState(index);
           Array.prototype.slice.call(this.results.children).forEach(otherStep => {
@@ -85,53 +85,51 @@ StateDisplay.prototype.displayTrace = function(trace) {
   }
 };
 
-StateDisplay.prototype.addTaskHighlight = function(stateIndex) {
-  const currentTx = this.trace[stateIndex].curTx;
-  if (currentTx.type === 'TaskTx') {
-    const shape = this.elementRegistry.get(currentTx.target);
-    this.overlayIDs.push(this.overlays.add(shape.id, {
-      position: {
-        top: -10,
-        left: -10
-      },
-      html: `<div class="circle-overlay task-active">${ this.trace[stateIndex].timestamp }</div>`
-    }));
-    this.canvas.addMarker(shape.id, 'highlight');
-    this.cssMarkes.push(shape.id);
-  }
-};
+// StateDisplay.prototype.addTaskHighlight = function(stateIndex) {
+//   const currentTx = this.trace[stateIndex].curTx;
+//   if (currentTx.type === 'TaskTx') {
+//     const shape = this.elementRegistry.get(currentTx.target);
+//     this.overlayIDs.push(this.overlays.add(shape.id, {
+//       position: {
+//         top: -10,
+//         left: -10
+//       },
+//       html: `<div class="circle-overlay task-active">${ this.trace[stateIndex].timestamp }</div>`
+//     }));
+//     this.canvas.addMarker(shape.id, 'highlight');
+//     this.cssMarkes.push(shape.id);
+//   }
+// };
 
-StateDisplay.prototype.addMessageValues = function(stateIndex) {
-  const messageValues = this.trace[stateIndex].messageValues;
-  for (let taskID in messageValues) {
-    const task = this.elementRegistry.get(taskID);
-    const message = task.businessObject.messageFlowRef.find(
-      ref => ref.sourceRef === task.businessObject.initiatingParticipantRef).messageRef;
-    const messageShape = this.elementRegistry.get(message.id);
-    if (messageShape.hidden === false) {
-      this.overlayIDs.push(this.overlays.add(message.id, {
-        position: {
-          top: 3,
-          left: 6
-        },
-        html: `<div class="circle-overlay message-value">${ messageValues[taskID] }</div>`
-      }));
-    }
-  }
-};
+// StateDisplay.prototype.addMessageValues = function(stateIndex) {
+//   const messageValues = this.trace[stateIndex].messageValues;
+//   for (let taskID in messageValues) {
+//     const task = this.elementRegistry.get(taskID);
+//     const message = task.businessObject.messageFlowRef.find(
+//       ref => ref.sourceRef === task.businessObject.initiatingParticipantRef).messageRef;
+//     const messageShape = this.elementRegistry.get(message.id);
+//     if (messageShape.hidden === false) {
+//       this.overlayIDs.push(this.overlays.add(message.id, {
+//         position: {
+//           top: 3,
+//           left: 6
+//         },
+//         html: `<div class="circle-overlay message-value">${ messageValues[taskID] }</div>`
+//       }));
+//     }
+//   }
+// };
 
 StateDisplay.prototype.displayState = function(stateIndex) {
   this.clearOverlay();
   this.addSequenceFlowTraces(stateIndex);
-  this.addTaskHighlight(stateIndex);
-  this.addMessageValues(stateIndex);
+  // this.addTaskHighlight(stateIndex);
+  // this.addMessageValues(stateIndex);
 };
 
 StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
   const state = this.trace[stateIndex];
-  state.marking.forEach(token => {
-    const id = token[0];
-    const timestamp = token[1];
+  state.marking.forEach(id => {
 
     // calculate position of the overlay
     const sf = this.elementRegistry.get(id);
@@ -153,7 +151,7 @@ StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
         top: topOffset - 10,
         left: leftOffset - 10
       },
-      html: `<div class="circle-overlay flow-active">${ timestamp }</div>`
+      html: `<div class="circle-overlay flow-active">${ 1 }</div>`
     }));
   });
 };

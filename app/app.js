@@ -1,16 +1,15 @@
+import Modeler from 'bpmn-js/lib/Modeler';
 import PropertiesPanelModule from 'bpmn-js-properties-panel';
-import PropertiesProviderModule from './lib/properties-provider';
+import PropertiesProviderModule from 'bpmn-js-properties-panel/lib/provider/bpmn';
 
-import ChoreoModeler from 'chor-js/lib/Modeler';
-
-import xml from './diagrams/train.bpmn';
-import blankXml from './diagrams/newDiagram.bpmn';
 import StateDisplay from './lib/state-display/StateDisplay.js';
+
+import blankXml from './diagrams/blank.bpmn';
 
 let lastFile;
 
 // create and configure a chor-js instance
-const modeler = new ChoreoModeler({
+const modeler = new Modeler({
   container: '#canvas',
   propertiesPanel: {
     parent: '#properties-panel'
@@ -25,10 +24,8 @@ const modeler = new ChoreoModeler({
 });
 
 // display the given model (XML representation)
-function renderModel(newXml) {
-  modeler.importXML(newXml, {
-    // choreoID: '_choreo1'
-  }).then(() => {
+function renderModel(newXml = blankXml) {
+  modeler.importXML(newXml).then(() => {
     modeler.get('canvas').zoom('fit-viewport');
   }).catch(error => {
     console.error('something went wrong: ', error);
@@ -47,31 +44,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // download diagram as XML
   const downloadLink = document.getElementById('js-download-diagram');
   downloadLink.addEventListener('click', async e => {
-    await modeler.saveXML({ format: true }, (err, xml) => {
-      if (err) {
-        e.preventDefault();
-        e.stopPropagation();
-        alert(err);
-      } else {
-        downloadLink['href'] = 'data:application/bpmn20-xml;charset=UTF-8,' + encodeURIComponent(xml);
-        downloadLink['download'] = diagramName();
-      }
-    });
+    const result = await modeler.saveXML({ format: true });
+    downloadLink['href'] = 'data:application/bpmn20-xml;charset=UTF-8,' + encodeURIComponent(result.xml);
+    downloadLink['download'] = diagramName();
   });
 
   // download diagram as SVG
   const downloadSvgLink = document.getElementById('js-download-svg');
   downloadSvgLink.addEventListener('click', async e => {
-    await modeler.saveSVG((err, svg) => {
-      if (err) {
-        e.preventDefault();
-        e.stopPropagation();
-        alert(err);
-      } else {
-        downloadSvgLink['href'] = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
-        downloadSvgLink['download'] = diagramName() + '.svg';
-      }
-    });
+    const result = await modeler.saveSVG();
+    downloadSvgLink['href'] = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(result.svg);
+    downloadSvgLink['download'] = diagramName() + '.svg';
   });
 
   // open file dialog
@@ -102,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // create new diagram
   const newDiagram = document.getElementById('js-new-diagram');
   newDiagram.addEventListener('click', e => {
-    renderModel(blankXml);
+    renderModel();
     lastFile = false;
   });
 
@@ -127,4 +110,4 @@ document.addEventListener('DOMContentLoaded', () => {
 // expose bpmnjs to window for debugging purposes
 window.bpmnjs = modeler;
 
-renderModel(xml);
+renderModel();
