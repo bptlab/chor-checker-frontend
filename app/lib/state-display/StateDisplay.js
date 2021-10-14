@@ -1,3 +1,4 @@
+import { is } from 'bpmn-js/lib/util/ModelUtil';
 import { getBBox } from 'diagram-js/lib/util/Elements';
 
 export default function StateDisplay(viewer) {
@@ -132,17 +133,19 @@ StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
   state.marking.forEach(id => {
 
     // calculate position of the overlay
-    const sf = this.elementRegistry.get(id);
-    const bbox = getBBox([sf]);
+    const element = this.elementRegistry.get(id);
     let topOffset = 0;
     let leftOffset = 0;
-    if (sf.waypoints.length > 2) {
-      const target = sf.waypoints[Math.floor(sf.waypoints.length / 2)];
-      leftOffset = target.x - bbox.x;
-      topOffset = target.y - bbox.y;
-    } else {
-      leftOffset = bbox.width / 2 - 6; // 6 for the arrow
-      topOffset = bbox.height / 2;
+    if (is(element, 'bpmn:SequenceFlow')) {
+      const bbox = getBBox([element]);
+      if (element.waypoints.length > 2) {
+        const target = element.waypoints[Math.floor(element.waypoints.length / 2)];
+        leftOffset = target.x - bbox.x;
+        topOffset = target.y - bbox.y;
+      } else {
+        leftOffset = bbox.width / 2;
+        topOffset = bbox.height / 2;
+      }
     }
 
     // add overlay
@@ -151,7 +154,7 @@ StateDisplay.prototype.addSequenceFlowTraces = function(stateIndex) {
         top: topOffset - 10,
         left: leftOffset - 10
       },
-      html: `<div class="circle-overlay flow-active">${ 1 }</div>`
+      html: `<div class="circle-overlay flow-active">${ state.age[id] }</div>`
     }));
   });
 };
